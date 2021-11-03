@@ -1,0 +1,34 @@
+import os
+import processing
+from qgis.core import *
+from qgis.utils import iface
+from PyQt5.QtCore import QVariant
+
+def open_vector_layers(path,type):
+    files = list_files(path,type)
+    vectors = {}
+    for file in files:
+        filename = file.split('.')[0]
+        vector = iface.addVectorLayer(path+file,filename,"ogr")
+        vectors.update({filename:vector})
+    return vectors 
+
+def create_folder(path):
+    if not os.path.exists(path+'reproject'):
+        os.makedirs(path+'reproject')
+
+def reproject(path,epsg):
+    create_folder(path)
+    for shape in list_files(path,'.shp'):
+        input_path = path+shape
+        out_path = path + '/reproject/'+str(epsg)+ '_'+shape
+        processing.run("native:reprojectlayer", {
+                        'INPUT':input_path,
+                        'TARGET_CRS':QgsCoordinateReferenceSystem(f'EPSG:{epsg}'),
+                        'OPERATION':'+proj=noop',
+                        'OUTPUT':out_path})
+    return
+
+path = 'C:/Users/XXXX/Desktop/XXXXXXXX/XXXXXXXX/'
+reproject(path,4326)
+camadas = open_vector_layers(path+'reproject/','.shp')
