@@ -1,0 +1,21 @@
+##Gerar um arquivo raster de interpolação (IDW) de cada atributo (coluna) de um shape de pontos
+path = 'C:/Users/XXXXXX/Documents/XXXX/XXX/XXX/XXX/XX/XXX/inter.gpkg'
+output_path = 'C:/Users/XXX/Documents/XXXXX/XXX/XXX/XXX/XXX/XXX/result/'
+layer = iface.addVectorLayer(path,'','ogr')
+boulding = layer.extent()
+extent = f'{boulding.xMinimum()},{boulding.xMaximum()},{boulding.yMinimum()},{boulding.yMaximum()}'
+
+list_fields = []
+for field in layer.fields():
+    list_fields.append(field.name())
+
+count = 0
+for field in list_fields:
+    if count >=5:
+        processing.run("qgis:idwinterpolation", 
+                {'INTERPOLATION_DATA':f'{path}::~::0::~::{count}::~::0',
+                'DISTANCE_COEFFICIENT':2,
+                'EXTENT':f'{extent} [EPSG:31982]',
+                'PIXEL_SIZE':10,
+                'OUTPUT':f'{output_path}{field}.tif'})
+    count += 1
